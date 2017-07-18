@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 import cv2
 import os, glob
 import numpy as np
+import sys
 
-img = cv2.imread('assets/tallinn_road_img.jpg')
+img = cv2.imread(str(sys.argv[1]))
 
 def convert_hls(img):
     return cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
@@ -39,7 +40,6 @@ def filter_region(img, vertices):
     return cv2.bitwise_and(img, mask)
 
 def select_region(img):
-    # first, define the polygon by vertices
     rows, cols = img.shape[:2]
     bottom_left  = [cols*0.1, rows*0.95]
     top_left     = [cols*0.45, rows*0.2]
@@ -52,10 +52,10 @@ def select_region(img):
 def hough_lines(img):
     return cv2.HoughLinesP(img, rho=1, theta=np.pi/180, threshold=30, minLineLength=20, maxLineGap=300)
 
-def draw_lines(img, lines, color=[0, 0, 255], thickness=2, make_copy=True):
+def draw_lines(img, lines, color=[0, 0, 255], thickness=15, make_copy=True):
     # the lines returned by cv2.HoughLinesP has the shape (-1, 1, 4)
     if make_copy:
-        img = np.copy(img) # don't want to modify the original
+        img = np.copy(img)
     for line in lines:
         for x1,y1,x2,y2 in line:
             cv2.line(img, (x1, y1), (x2, y2), color, thickness)
@@ -88,9 +88,6 @@ def average_slope_intercept(lines):
     return left_lane, right_lane # (slope, intercept), (slope, intercept)
 
 def make_line_points(y1, y2, line):
-    """
-    Convert a line represented in slope and intercept into pixel points
-    """
     if line is None:
         return None
 
